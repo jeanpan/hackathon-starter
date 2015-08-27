@@ -21,6 +21,8 @@ var passport = require('passport');
 var expressValidator = require('express-validator');
 var assets = require('connect-assets');
 
+var exphbs = require('express-handlebars');
+
 /**
  * Controllers (route handlers).
  */
@@ -53,7 +55,23 @@ mongoose.connection.on('error', function() {
  */
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+
+var hbs = exphbs.create({
+  // Specify helpers which are only registered on this instance.
+  helpers: {
+    equal: function (a, b, opts) {
+      if (a === b)
+        return opts.fn(this);
+      else
+        return opts.inverse(this);
+    }
+  }, 
+  defaultLayout: 'layout'
+});
+
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
+
 app.use(compress());
 app.use(assets({
   paths: ['public/css', 'public/js']
